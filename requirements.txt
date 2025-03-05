@@ -6,8 +6,7 @@ python-dotenv==1.0.0
 groq==0.4.0
 sentence-transformers==2.2.2
 chromadb==0.4.24
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch==2.1.0+cpu
+torch>=2.2.0
 transformers==4.37.2
 numpy==1.24.3
 scikit-learn==1.3.2
