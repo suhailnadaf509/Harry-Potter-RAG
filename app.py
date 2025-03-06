@@ -20,8 +20,16 @@ client = None
 
 if groq_api_key:
     try:
-        from groq import Groq
-        client = Groq(api_key=groq_api_key)
+        # Try different import patterns for different groq package versions
+        try:
+            from groq import Groq
+            client = Groq(api_key=groq_api_key)
+        except (ImportError, AttributeError):
+            try:
+                import groq
+                client = groq.Client(api_key=groq_api_key)
+            except (ImportError, AttributeError):
+                st.error("Could not import Groq client. Please check the groq package version.")
     except Exception as e:
         st.error(f"Error initializing Groq client: {str(e)}")
         st.info("Continuing without LLM capabilities. Some features may be limited.")
@@ -62,20 +70,34 @@ if submitted:
                 + "\n\nPlease provide a rough answer based only on the provided documents. If the answer is not found in the documents, respond with 'I'm not sure'."
             )
 
-            completion = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a Harry Potter expert who answers questions about the Harry Potter universe."
-                    },
-                    {
-                        "role": "user",
-                        "content": combined_input
-                    }
-                ]
-            )
-            st.write(completion.choices[0].message.content)
+            try:
+                # Try different API patterns
+                try:
+                    completion = client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": "You are a Harry Potter expert who answers questions about the Harry Potter universe."
+                            },
+                            {
+                                "role": "user",
+                                "content": combined_input
+                            }
+                        ]
+                    )
+                    st.write(completion.choices[0].message.content)
+                except AttributeError:
+                    # Fallback for older API
+                    completion = client.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        prompt=f"You are a Harry Potter expert. {combined_input}",
+                        max_tokens=1000
+                    )
+                    st.write(completion.choices[0].text)
+            except Exception as e:
+                st.error(f"Error generating response: {str(e)}")
+                st.info("Could not generate LLM response. Showing only retrieved documents.")
         else:
             st.info("LLM response not available. Please check your GROQ_API_KEY.")
     except Exception as e:
