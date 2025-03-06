@@ -9,3 +9,6 @@ chromadb==0.4.24
 torch>=2.2.0
 transformers>=4.37.2
 numpy>=1.26.0
+langchain_huggingface>=0.1.0
+transformers>=4.37.2
+huggingface_hub>=0.20.0
