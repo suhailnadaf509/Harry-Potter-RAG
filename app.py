@@ -1,9 +1,17 @@
+# Import SQLite fix first, before any other imports
+import sqlite_fix
+
 import os
 from langchain_community.vectorstores import Chroma
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_community.embeddings import HuggingFaceEmbeddings
 import streamlit as st
 from dotenv import load_dotenv
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -55,9 +63,13 @@ def get_db():
             return None
         
         # Load the database
-        return Chroma(persist_directory=persistent_directory, embedding_function=embeddings)
+        logger.info("Loading Chroma database...")
+        db = Chroma(persist_directory=persistent_directory, embedding_function=embeddings)
+        logger.info(f"Successfully loaded Chroma database with {db._collection.count()} documents")
+        return db
     except Exception as e:
         st.error(f"Error loading vector database: {str(e)}")
+        logger.error(f"Error loading vector database: {str(e)}", exc_info=True)
         return None
 
 # UI components
